@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import javax.security.auth.login.LoginException;
@@ -22,31 +23,29 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.dv8tion.jda.api.requests.GatewayIntent.GUILD_MESSAGES;
-import static net.dv8tion.jda.api.requests.GatewayIntent.GUILD_VOICE_STATES;
 
-public class TestBot {
+public class TestBot extends ListenerAdapter {
     public static void main(String[] args) {
-
         try {
-            new TestBot();
+            TestBot tb = new TestBot();
+            tb.runBot();
         } catch (LoginException e) {
             e.printStackTrace();
         }
+
+
     }
 
     private final AudioPlayerManager playerManager;
     private final Map<Long, GuildMusicManager> musicMangers;
-    private final JDA jda;
+    private JDA jda;
+    private final String url = "https://www.youtube.com/watch?v=pLuNy8qfK9Q";
 
     public TestBot() throws LoginException {
-       // jda = JDABuilder.createDefault("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I").build();
 
-        jda = JDABuilder.create("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I", GUILD_MESSAGES,GUILD_VOICE_STATES)
-                .addEventListeners(new TestBot()).build();
 
-        jda.getPresence().setActivity(Activity.watching("Lukas fail at programming"));
-
+       // jda = JDABuilder.create("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I", GUILD_MESSAGES,GUILD_VOICE_STATES)
+               // .addEventListeners(new TestBot()).build();
 
 
         musicMangers = new HashMap<>();
@@ -60,7 +59,13 @@ public class TestBot {
     }
 
 
+        void runBot() throws LoginException {
+            jda = JDABuilder.createDefault("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I").build();
+            jda.getPresence().setActivity(Activity.watching("Lukas fail at programming"));
+            jda.addEventListener(new TestBot());
 
+
+        }
 
 
     private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild){
@@ -86,7 +91,7 @@ public class TestBot {
     private void loadAndPlay(final TextChannel channel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
 
-        playerManager.loadItemOrdered(musicManager, "https://www.youtube.com/watch?v=Qmm-Ivuphzw", new AudioLoadResultHandler() {
+        playerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
                 channel.sendMessage("Adding to queue " + track.getInfo().title).queue();
@@ -109,7 +114,7 @@ public class TestBot {
 
             @Override
             public void noMatches() {
-                channel.sendMessage("Nothing found by " + "https://www.youtube.com/watch?v=Qmm-Ivuphzw").queue();
+                channel.sendMessage("Nothing found by " + url).queue();
             }
 
             @Override
