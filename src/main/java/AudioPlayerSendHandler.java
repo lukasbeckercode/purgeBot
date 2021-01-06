@@ -5,7 +5,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-
+//This class makes audio files play somehow
+//I think we are seeing a theme here but: Copy+Pasted this bitch, no idea what it does, don´t care either :)
 public class AudioPlayerSendHandler implements AudioSendHandler {
     private final AudioPlayer audioPlayer;
     private final ByteBuffer buffer;

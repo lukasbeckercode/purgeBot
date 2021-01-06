@@ -6,6 +6,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+//I´m pretty sure this class would be useless as we only play one song
+//But deleting it would mean rewriting the code
+//which is not an option, because as stated in various other comments:
+//I CAN`T BE FUCKED
 public class AudioTrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
     private final BlockingQueue<AudioTrack> queue;

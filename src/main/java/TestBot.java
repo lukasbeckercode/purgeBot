@@ -22,6 +22,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+/*
+* This is a bot that plays the purge siren in discord
+* I just copied stuff from github and it somehow works
+* I have no idea how or why this works, but it does
+* Yaay
+* */
 
 
 public class TestBot extends ListenerAdapter {
@@ -46,10 +52,11 @@ public class TestBot extends ListenerAdapter {
 
 
     public TestBot() throws LoginException {
-
+        //Constructor
 
         musicMangers = new HashMap<>();
         playerManager = new DefaultAudioPlayerManager();
+
         AudioSourceManagers.registerRemoteSources(playerManager);
         AudioSourceManagers.registerLocalSource(playerManager);
 
@@ -60,6 +67,7 @@ public class TestBot extends ListenerAdapter {
 
 
         void runBot() throws LoginException {
+        //show stuff if the bot is running
             jda.getPresence().setActivity(Activity.watching("Lukas fail at programming"));
             jda.addEventListener(new TestBot());
 
@@ -68,9 +76,12 @@ public class TestBot extends ListenerAdapter {
 
 
     private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild){
-        long guildID = Long.parseLong(guild.getId());
+        //???
 
-        GuildMusicManager musicManger = musicMangers.get(guildID);
+        long guildID = Long.parseLong(guild.getId()); //get guild id
+
+        GuildMusicManager musicManger = musicMangers.get(guildID); //new Object, set guild id
+
         if(musicManger == null){
             musicManger = new GuildMusicManager(playerManager);
             musicMangers.put(guildID,musicManger);
@@ -81,6 +92,7 @@ public class TestBot extends ListenerAdapter {
         return musicManger;
     }
     public void onGuildMessageReceived(GuildMessageReceivedEvent event){
+        //read incoming commands
         String message = event.getMessage().getContentDisplay();
 
         switch (message){
@@ -92,6 +104,7 @@ public class TestBot extends ListenerAdapter {
     }
 
     private void terminateBot(final TextChannel channel) {
+        //Not working properly
         new Thread(()->{
             System.out.println("Killing myself...");
             jda.getPresence().setStatus(OnlineStatus.OFFLINE);
@@ -104,11 +117,13 @@ public class TestBot extends ListenerAdapter {
     }
 
     private void loadAndPlay(final TextChannel channel) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+        //this plays the track
+        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild()); //play in the current channel
 
         playerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
+                //Load the track
                 channel.sendMessage("PURGING").queue();
 
                 play(channel.getGuild(), musicManager, track);
@@ -116,6 +131,7 @@ public class TestBot extends ListenerAdapter {
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
+                //useless, because i only use 1 track
                 AudioTrack firstTrack = playlist.getSelectedTrack();
 
                 if (firstTrack == null) {
@@ -140,12 +156,14 @@ public class TestBot extends ListenerAdapter {
     }
 
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track) {
+        //play the sound effect
             connectToFirstVoiceChannel(guild.getAudioManager());
 
             musicManager.scheduler.queue(track);
     }
 
     private void skipTrack(TextChannel channel) {
+        //skip, if nothing follows the current playing track, stop
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
         musicManager.scheduler.nextTrack();
 
@@ -153,7 +171,9 @@ public class TestBot extends ListenerAdapter {
     }
 
     private void connectToFirstVoiceChannel(AudioManager audioManager) {
-        if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
+        //This seems to look for the right voice channel
+        //I don´t know for sure, this is just me pressing crtl+c and crtl+v repeatedly
+        if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) { //This seems to be deprecated :(
             for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
                 audioManager.openAudioConnection(voiceChannel);
                 break;
@@ -165,6 +185,7 @@ public class TestBot extends ListenerAdapter {
 
 
     void stopBot() {
+        //another attempt to stop the bot, works sometimes
         new Thread(() -> {
             String line;
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
