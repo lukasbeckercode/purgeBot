@@ -28,7 +28,7 @@ public class TestBot extends ListenerAdapter {
 
     private final AudioPlayerManager playerManager;
     private final Map<Long, GuildMusicManager> musicMangers;
-    private final JDA jda = JDABuilder.createDefault("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I").build();
+    private final JDA jda = JDABuilder.createDefault("TOKEN").build();
     private final String url = "https://www.youtube.com/watch?v=pLuNy8qfK9Q";
 
     public static void main(String[] args) {
