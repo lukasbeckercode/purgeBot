@@ -25,9 +25,16 @@ import java.util.Map;
 
 
 public class TestBot extends ListenerAdapter {
+
+    private final AudioPlayerManager playerManager;
+    private final Map<Long, GuildMusicManager> musicMangers;
+    private final JDA jda = JDABuilder.createDefault("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I").build();
+    private final String url = "https://www.youtube.com/watch?v=pLuNy8qfK9Q";
+
     public static void main(String[] args) {
+        TestBot tb;
         try {
-            TestBot tb = new TestBot();
+             tb = new TestBot();
             tb.runBot();
         } catch (LoginException e) {
             e.printStackTrace();
@@ -36,16 +43,9 @@ public class TestBot extends ListenerAdapter {
 
     }
 
-    private final AudioPlayerManager playerManager;
-    private final Map<Long, GuildMusicManager> musicMangers;
-    private JDA jda;
-    private final String url = "https://www.youtube.com/watch?v=pLuNy8qfK9Q";
+
 
     public TestBot() throws LoginException {
-
-
-       // jda = JDABuilder.create("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I", GUILD_MESSAGES,GUILD_VOICE_STATES)
-               // .addEventListeners(new TestBot()).build();
 
 
         musicMangers = new HashMap<>();
@@ -60,7 +60,6 @@ public class TestBot extends ListenerAdapter {
 
 
         void runBot() throws LoginException {
-            jda = JDABuilder.createDefault("NzkwMjEyODQxNDQ5MDYyNDEw.X99VDg.bfpnrkjQJy8U5PJ3ybN9bieuC4I").build();
             jda.getPresence().setActivity(Activity.watching("Lukas fail at programming"));
             jda.addEventListener(new TestBot());
 
@@ -83,9 +82,25 @@ public class TestBot extends ListenerAdapter {
     }
     public void onGuildMessageReceived(GuildMessageReceivedEvent event){
         String message = event.getMessage().getContentDisplay();
-        if (message.equals("-purge")) {
-            loadAndPlay(event.getChannel());
+
+        switch (message){
+            case "-purge"->loadAndPlay(event.getChannel());
+            case "-stop"->skipTrack(event.getChannel());
+            case "-kys"->terminateBot(event.getChannel());
         }
+
+    }
+
+    private void terminateBot(final TextChannel channel) {
+        new Thread(()->{
+            System.out.println("Killing myself...");
+            jda.getPresence().setStatus(OnlineStatus.OFFLINE);
+            channel.sendMessage("ok :(").queue();
+            jda.shutdown();
+
+            System.exit(0);
+        }).start();
+
     }
 
     private void loadAndPlay(final TextChannel channel) {
@@ -94,7 +109,7 @@ public class TestBot extends ListenerAdapter {
         playerManager.loadItemOrdered(musicManager, url, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                channel.sendMessage("Adding to queue " + track.getInfo().title).queue();
+                channel.sendMessage("PURGING").queue();
 
                 play(channel.getGuild(), musicManager, track);
             }
@@ -130,6 +145,13 @@ public class TestBot extends ListenerAdapter {
             musicManager.scheduler.queue(track);
     }
 
+    private void skipTrack(TextChannel channel) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+        musicManager.scheduler.nextTrack();
+
+        channel.sendMessage("End Purge").queue();
+    }
+
     private void connectToFirstVoiceChannel(AudioManager audioManager) {
         if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
             for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
@@ -149,13 +171,11 @@ public class TestBot extends ListenerAdapter {
             try {
                 while ((line = reader.readLine()) != null) {
                     if (line.equalsIgnoreCase("exit")) {
-                        if (jda != null) {
-                            jda.getPresence().setStatus(OnlineStatus.OFFLINE);
-                            jda.shutdown();
-                            System.out.println("bot offline");
-                            reader.close();
-                            System.exit(0);
-                        }
+                        jda.getPresence().setStatus(OnlineStatus.OFFLINE);
+                        jda.shutdown();
+                        System.out.println("bot offline");
+                        reader.close();
+                        System.exit(0);
                     }
                 }
 
